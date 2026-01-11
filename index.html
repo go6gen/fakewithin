@@ -228,7 +228,7 @@
 
         .section-btn.active {
             color: #ffffff;
-            border-color: #ffffff;
+            border-color = "#ffffff";
             background: rgba(255, 255, 255, 0.1);
         }
 
@@ -304,11 +304,6 @@
             max-height: 70vh;
             object-fit: cover;
             background: #000;
-        }
-
-        .gif-container {
-            position: relative;
-            background: #111;
         }
 
         .gif-container img {
@@ -401,24 +396,6 @@
             z-index: 1;
             filter: blur(0.5px);
             transition: all 0.3s ease;
-        }
-
-        @keyframes orbit-letter {
-            0% {
-                transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
-            }
-        }
-
-        @keyframes orbit-letter-reverse {
-            0% {
-                transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
-            }
-            100% {
-                transform: rotate(-360deg) translateX(var(--orbit-radius)) rotate(360deg);
-            }
         }
 
         @keyframes float-gently {
@@ -561,8 +538,6 @@
     </div>
 
     <script>
-        const CLIP_EXTENSIONS = ['mp4', 'mov', 'webm', 'avi', 'mkv', 'gif', 'jpg', 'jpeg', 'png'];
-        
         document.addEventListener('DOMContentLoaded', function() {
             initOrbitalDots();
             
@@ -655,33 +630,14 @@
             `;
             
             try {
-                const sectionsData = [];
-                
-                const predefinedFolders = ['suffergod', 'bow_tricks', 'montages', 'highlights'];
-                
-                for (const folderName of predefinedFolders) {
-                    try {
-                        const response = await fetch(`./clips/${folderName}/`, { method: 'HEAD' });
-                        if (response.ok) {
-                            const files = await getFilesInFolder(folderName);
-                            if (files.length > 0) {
-                                sectionsData.push({
-                                    name: folderName,
-                                    clips: files
-                                });
-                            }
-                        }
-                    } catch (error) {
-                    }
-                }
+                const sectionsData = await discoverClipFolders();
                 
                 if (sectionsData.length === 0) {
                     clipsContainer.innerHTML = `
                         <div style="text-align: center; padding: 100px 20px;">
                             <div style="color: #888; font-size: 16px;">
                                 <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
-                                <p>No clip folders found. Make sure folders exist in the clips directory.</p>
-                                <p style="margin-top: 10px; font-size: 14px;">Expected folders: suffergod, bow_tricks, montages, highlights</p>
+                                <p>No clip folders found in /clips/ directory</p>
                             </div>
                         </div>
                     `;
@@ -695,33 +651,64 @@
                     <div style="text-align: center; padding: 100px 20px;">
                         <div style="color: #888; font-size: 16px;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
-                            <p>Error loading clips. Make sure the clips folder exists with subfolders.</p>
+                            <p>Error loading clips. Check if clips folder exists.</p>
                         </div>
                     </div>
                 `;
             }
         }
         
-        async function getFilesInFolder(folderName) {
-            const files = [];
+        async function discoverClipFolders() {
+            const sectionsData = [];
             
-            for (const ext of CLIP_EXTENSIONS) {
-                for (let i = 1; i <= 20; i++) {
-                    const fileName = `clip${i}.${ext}`;
-                    const filePath = `./clips/${folderName}/${fileName}`;
-                    
-                    try {
-                        const response = await fetch(filePath, { method: 'HEAD' });
-                        if (response.ok) {
-                            files.push(fileName);
-                        }
-                    } catch (error) {
-                        break;
+            try {
+                const folderNames = ['suffergod', 'bow_tricks', 'montages', 'highlights'];
+                
+                for (const folderName of folderNames) {
+                    const clips = await getClipsFromFolder(folderName);
+                    if (clips.length > 0) {
+                        sectionsData.push({
+                            name: folderName,
+                            clips: clips
+                        });
                     }
                 }
+            } catch (error) {
             }
             
-            return files;
+            return sectionsData;
+        }
+        
+        async function getClipsFromFolder(folderName) {
+            const clips = [];
+            
+            try {
+                const testClip = `./clips/${folderName}/clip1.mp4`;
+                const response = await fetch(testClip, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    const extensions = ['mp4', 'mov', 'webm', 'avi', 'mkv', 'gif', 'jpg', 'jpeg', 'png'];
+                    
+                    for (const ext of extensions) {
+                        for (let i = 1; i <= 50; i++) {
+                            const fileName = `clip${i}.${ext}`;
+                            const filePath = `./clips/${folderName}/${fileName}`;
+                            
+                            try {
+                                const fileResponse = await fetch(filePath, { method: 'HEAD' });
+                                if (fileResponse.ok) {
+                                    clips.push(fileName);
+                                }
+                            } catch (error) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+            }
+            
+            return clips;
         }
         
         function renderClips(sectionsData) {
@@ -798,16 +785,6 @@
                         const extension = clip.toLowerCase().split('.').pop();
                         const clipPath = `./clips/${section.name}/${clip}`;
                         
-                        const placeholder = document.createElement('div');
-                        placeholder.className = 'loading-placeholder';
-                        placeholder.innerHTML = `
-                            <div>
-                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i>
-                                Loading clip...
-                            </div>
-                        `;
-                        mediaContainer.appendChild(placeholder);
-                        
                         if (['mp4', 'mov', 'webm', 'avi', 'mkv'].includes(extension)) {
                             const video = document.createElement('video');
                             video.src = clipPath;
@@ -820,19 +797,16 @@
                             video.style.display = 'block';
                             video.style.objectFit = 'cover';
                             
-                            video.addEventListener('loadeddata', function() {
-                                placeholder.remove();
-                                mediaContainer.appendChild(video);
-                            });
-                            
                             video.addEventListener('error', function() {
-                                placeholder.innerHTML = `
-                                    <div style="text-align: center; color: #888;">
+                                mediaContainer.innerHTML = `
+                                    <div style="text-align: center; color: #888; padding: 40px;">
                                         <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                        <p>Video failed to load</p>
+                                        <p>Video failed to load: ${clip}</p>
                                     </div>
                                 `;
                             });
+                            
+                            mediaContainer.appendChild(video);
                             
                         } else if (['gif', 'jpg', 'jpeg', 'png'].includes(extension)) {
                             const img = document.createElement('img');
@@ -844,19 +818,16 @@
                             img.style.objectFit = 'cover';
                             img.style.borderRadius = '12px';
                             
-                            img.addEventListener('load', function() {
-                                placeholder.remove();
-                                mediaContainer.appendChild(img);
-                            });
-                            
                             img.addEventListener('error', function() {
-                                placeholder.innerHTML = `
-                                    <div style="text-align: center; color: #888;">
+                                mediaContainer.innerHTML = `
+                                    <div style="text-align: center; color: #888; padding: 40px;">
                                         <i class="fas fa-exclamation-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                        <p>Image failed to load</p>
+                                        <p>Image failed to load: ${clip}</p>
                                     </div>
                                 `;
                             });
+                            
+                            mediaContainer.appendChild(img);
                         }
                         
                         clipItem.appendChild(mediaContainer);

@@ -561,6 +561,8 @@
     </div>
 
     <script>
+        const CLIP_EXTENSIONS = ['mp4', 'mov', 'webm', 'avi', 'mkv', 'gif', 'jpg', 'jpeg', 'png'];
+        
         document.addEventListener('DOMContentLoaded', function() {
             initOrbitalDots();
             
@@ -577,7 +579,7 @@
                     clipsGallery.classList.add('active');
                     document.body.style.overflow = 'auto';
                     
-                    fetchAndLoadClips();
+                    loadClips();
                 }, 500);
             });
             
@@ -636,7 +638,7 @@
             }
         }
         
-        async function fetchAndLoadClips() {
+        async function loadClips() {
             const clipsContainer = document.getElementById('clipsContainer');
             const sectionNav = document.getElementById('sectionNav');
             
@@ -653,57 +655,23 @@
             `;
             
             try {
-                const response = await fetch('./clips/');
-                const text = await response.text();
-                const parser = new DOMParser();
-                const htmlDoc = parser.parseFromString(text, 'text/html');
-                const links = htmlDoc.querySelectorAll('a');
-                
-                const folderNames = [];
-                links.forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && href.endsWith('/') && href !== '../') {
-                        folderNames.push(href.replace('/', ''));
-                    }
-                });
-                
-                if (folderNames.length === 0) {
-                    clipsContainer.innerHTML = `
-                        <div style="text-align: center; padding: 100px 20px;">
-                            <div style="color: #888; font-size: 16px;">
-                                <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
-                                <p>No clip folders found</p>
-                            </div>
-                        </div>
-                    `;
-                    return;
-                }
-                
                 const sectionsData = [];
                 
-                for (const folderName of folderNames) {
+                const predefinedFolders = ['suffergod', 'bow_tricks', 'montages', 'highlights'];
+                
+                for (const folderName of predefinedFolders) {
                     try {
-                        const folderResponse = await fetch(`./clips/${folderName}/`);
-                        const folderText = await folderResponse.text();
-                        const folderDoc = parser.parseFromString(folderText, 'text/html');
-                        const fileLinks = folderDoc.querySelectorAll('a');
-                        
-                        const files = [];
-                        fileLinks.forEach(fileLink => {
-                            const fileHref = fileLink.getAttribute('href');
-                            if (fileHref && !fileHref.endsWith('/') && fileHref !== '../') {
-                                files.push(fileHref);
+                        const response = await fetch(`./clips/${folderName}/`, { method: 'HEAD' });
+                        if (response.ok) {
+                            const files = await getFilesInFolder(folderName);
+                            if (files.length > 0) {
+                                sectionsData.push({
+                                    name: folderName,
+                                    clips: files
+                                });
                             }
-                        });
-                        
-                        if (files.length > 0) {
-                            sectionsData.push({
-                                name: folderName,
-                                clips: files
-                            });
                         }
                     } catch (error) {
-                        console.log(`Error reading folder ${folderName}:`, error);
                     }
                 }
                 
@@ -711,30 +679,52 @@
                     clipsContainer.innerHTML = `
                         <div style="text-align: center; padding: 100px 20px;">
                             <div style="color: #888; font-size: 16px;">
-                                <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
-                                <p>No clips found in folders</p>
+                                <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
+                                <p>No clip folders found. Make sure folders exist in the clips directory.</p>
+                                <p style="margin-top: 10px; font-size: 14px;">Expected folders: suffergod, bow_tricks, montages, highlights</p>
                             </div>
                         </div>
                     `;
                     return;
                 }
                 
-                loadClipsFromData(sectionsData);
+                renderClips(sectionsData);
                 
             } catch (error) {
-                console.error('Error fetching clips:', error);
                 clipsContainer.innerHTML = `
                     <div style="text-align: center; padding: 100px 20px;">
                         <div style="color: #888; font-size: 16px;">
                             <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
-                            <p>Error loading clips. Make sure the clips folder exists.</p>
+                            <p>Error loading clips. Make sure the clips folder exists with subfolders.</p>
                         </div>
                     </div>
                 `;
             }
         }
         
-        function loadClipsFromData(sectionsData) {
+        async function getFilesInFolder(folderName) {
+            const files = [];
+            
+            for (const ext of CLIP_EXTENSIONS) {
+                for (let i = 1; i <= 20; i++) {
+                    const fileName = `clip${i}.${ext}`;
+                    const filePath = `./clips/${folderName}/${fileName}`;
+                    
+                    try {
+                        const response = await fetch(filePath, { method: 'HEAD' });
+                        if (response.ok) {
+                            files.push(fileName);
+                        }
+                    } catch (error) {
+                        break;
+                    }
+                }
+            }
+            
+            return files;
+        }
+        
+        function renderClips(sectionsData) {
             const clipsContainer = document.getElementById('clipsContainer');
             const sectionNav = document.getElementById('sectionNav');
             
@@ -818,7 +808,7 @@
                         `;
                         mediaContainer.appendChild(placeholder);
                         
-                        if (extension === 'mp4' || extension === 'mov' || extension === 'webm' || extension === 'avi' || extension === 'mkv') {
+                        if (['mp4', 'mov', 'webm', 'avi', 'mkv'].includes(extension)) {
                             const video = document.createElement('video');
                             video.src = clipPath;
                             video.controls = true;
@@ -828,6 +818,7 @@
                             video.style.width = '100%';
                             video.style.height = 'auto';
                             video.style.display = 'block';
+                            video.style.objectFit = 'cover';
                             
                             video.addEventListener('loadeddata', function() {
                                 placeholder.remove();
@@ -843,38 +834,29 @@
                                 `;
                             });
                             
-                        } else if (extension === 'gif') {
-                            const gifContainer = document.createElement('div');
-                            gifContainer.className = 'gif-container';
+                        } else if (['gif', 'jpg', 'jpeg', 'png'].includes(extension)) {
                             const img = document.createElement('img');
                             img.src = clipPath;
                             img.alt = `${section.name} clip ${clipIndex + 1}`;
                             img.style.width = '100%';
                             img.style.height = 'auto';
                             img.style.display = 'block';
+                            img.style.objectFit = 'cover';
+                            img.style.borderRadius = '12px';
                             
                             img.addEventListener('load', function() {
                                 placeholder.remove();
-                                gifContainer.appendChild(img);
-                                mediaContainer.appendChild(gifContainer);
+                                mediaContainer.appendChild(img);
                             });
                             
                             img.addEventListener('error', function() {
                                 placeholder.innerHTML = `
                                     <div style="text-align: center; color: #888;">
                                         <i class="fas fa-exclamation-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                        <p>GIF failed to load</p>
+                                        <p>Image failed to load</p>
                                     </div>
                                 `;
                             });
-                            
-                        } else {
-                            placeholder.innerHTML = `
-                                <div style="padding: 40px; text-align: center; color: #888;">
-                                    <i class="fas fa-file" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                    <p>Unsupported file type: .${extension}</p>
-                                </div>
-                            `;
                         }
                         
                         clipItem.appendChild(mediaContainer);
@@ -897,27 +879,6 @@
                 }
                 
                 clipsContainer.appendChild(sectionDiv);
-            });
-            
-            initSmoothScroll();
-        }
-        
-        function initSmoothScroll() {
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
-                    
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        targetElement.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
-                    }
-                });
             });
         }
     </script>

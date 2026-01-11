@@ -296,13 +296,13 @@
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
         }
 
-        video, .gif-container {
+        video {
             width: 100%;
             height: auto;
             display: block;
             border-radius: 12px;
             max-height: 70vh;
-            object-fit: contain;
+            object-fit: cover;
             background: #000;
         }
 
@@ -315,8 +315,9 @@
             width: 100%;
             height: auto;
             display: block;
+            border-radius: 12px;
             max-height: 70vh;
-            object-fit: contain;
+            object-fit: cover;
         }
 
         .clip-divider {
@@ -560,15 +561,6 @@
     </div>
 
     <script>
-        const CLIPS_DATA = [
-            {
-                name: "suffergod",
-                clips: [
-                    "clip1.mov"
-                ]
-            },
-        ];
-
         document.addEventListener('DOMContentLoaded', function() {
             initOrbitalDots();
             
@@ -585,7 +577,7 @@
                     clipsGallery.classList.add('active');
                     document.body.style.overflow = 'auto';
                     
-                    loadClips();
+                    fetchAndLoadClips();
                 }, 500);
             });
             
@@ -644,28 +636,112 @@
             }
         }
         
-        function loadClips() {
+        async function fetchAndLoadClips() {
             const clipsContainer = document.getElementById('clipsContainer');
             const sectionNav = document.getElementById('sectionNav');
             
             clipsContainer.innerHTML = '';
             sectionNav.innerHTML = '';
             
-            const sections = CLIPS_DATA;
+            clipsContainer.innerHTML = `
+                <div style="text-align: center; padding: 100px 20px;">
+                    <div style="color: #888; font-size: 16px;">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <p>Loading clips...</p>
+                    </div>
+                </div>
+            `;
             
-            if (sections.length === 0) {
+            try {
+                const response = await fetch('./clips/');
+                const text = await response.text();
+                const parser = new DOMParser();
+                const htmlDoc = parser.parseFromString(text, 'text/html');
+                const links = htmlDoc.querySelectorAll('a');
+                
+                const folderNames = [];
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href.endsWith('/') && href !== '../') {
+                        folderNames.push(href.replace('/', ''));
+                    }
+                });
+                
+                if (folderNames.length === 0) {
+                    clipsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 100px 20px;">
+                            <div style="color: #888; font-size: 16px;">
+                                <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
+                                <p>No clip folders found</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const sectionsData = [];
+                
+                for (const folderName of folderNames) {
+                    try {
+                        const folderResponse = await fetch(`./clips/${folderName}/`);
+                        const folderText = await folderResponse.text();
+                        const folderDoc = parser.parseFromString(folderText, 'text/html');
+                        const fileLinks = folderDoc.querySelectorAll('a');
+                        
+                        const files = [];
+                        fileLinks.forEach(fileLink => {
+                            const fileHref = fileLink.getAttribute('href');
+                            if (fileHref && !fileHref.endsWith('/') && fileHref !== '../') {
+                                files.push(fileHref);
+                            }
+                        });
+                        
+                        if (files.length > 0) {
+                            sectionsData.push({
+                                name: folderName,
+                                clips: files
+                            });
+                        }
+                    } catch (error) {
+                        console.log(`Error reading folder ${folderName}:`, error);
+                    }
+                }
+                
+                if (sectionsData.length === 0) {
+                    clipsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 100px 20px;">
+                            <div style="color: #888; font-size: 16px;">
+                                <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
+                                <p>No clips found in folders</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                loadClipsFromData(sectionsData);
+                
+            } catch (error) {
+                console.error('Error fetching clips:', error);
                 clipsContainer.innerHTML = `
                     <div style="text-align: center; padding: 100px 20px;">
                         <div style="color: #888; font-size: 16px;">
-                            <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
-                            <p>No clips available at the moment</p>
+                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>Error loading clips. Make sure the clips folder exists.</p>
                         </div>
                     </div>
                 `;
-                return;
             }
+        }
+        
+        function loadClipsFromData(sectionsData) {
+            const clipsContainer = document.getElementById('clipsContainer');
+            const sectionNav = document.getElementById('sectionNav');
             
-            sections.forEach((section, index) => {
+            clipsContainer.innerHTML = '';
+            sectionNav.innerHTML = '';
+            
+            sectionsData.forEach((section, index) => {
                 const sectionBtn = document.createElement('button');
                 sectionBtn.className = `section-btn ${index === 0 ? 'active' : ''}`;
                 sectionBtn.textContent = section.name.toUpperCase();
@@ -686,7 +762,7 @@
                 sectionNav.appendChild(sectionBtn);
             });
             
-            sections.forEach((section, sectionIndex) => {
+            sectionsData.forEach((section, sectionIndex) => {
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'section';
                 sectionDiv.id = `section-${section.name}`;
@@ -742,85 +818,64 @@
                         `;
                         mediaContainer.appendChild(placeholder);
                         
-                        checkFileExists(clipPath).then(exists => {
-                            if (!exists) {
+                        if (extension === 'mp4' || extension === 'mov' || extension === 'webm' || extension === 'avi' || extension === 'mkv') {
+                            const video = document.createElement('video');
+                            video.src = clipPath;
+                            video.controls = true;
+                            video.muted = false;
+                            video.playsInline = true;
+                            video.preload = 'metadata';
+                            video.style.width = '100%';
+                            video.style.height = 'auto';
+                            video.style.display = 'block';
+                            
+                            video.addEventListener('loadeddata', function() {
+                                placeholder.remove();
+                                mediaContainer.appendChild(video);
+                            });
+                            
+                            video.addEventListener('error', function() {
                                 placeholder.innerHTML = `
                                     <div style="text-align: center; color: #888;">
                                         <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                        <p>Clip not found</p>
+                                        <p>Video failed to load</p>
                                     </div>
                                 `;
-                                return;
-                            }
+                            });
                             
-                            placeholder.remove();
+                        } else if (extension === 'gif') {
+                            const gifContainer = document.createElement('div');
+                            gifContainer.className = 'gif-container';
+                            const img = document.createElement('img');
+                            img.src = clipPath;
+                            img.alt = `${section.name} clip ${clipIndex + 1}`;
+                            img.style.width = '100%';
+                            img.style.height = 'auto';
+                            img.style.display = 'block';
                             
-                            if (extension === 'mp4' || extension === 'mov' || extension === 'webm') {
-                                const video = document.createElement('video');
-                                video.src = clipPath;
-                                video.controls = true;
-                                video.muted = false;
-                                video.playsInline = true;
-                                video.preload = 'metadata';
-                                video.style.width = '100%';
-                                video.style.height = 'auto';
-                                
-                                video.addEventListener('error', function() {
-                                    console.log(`Error loading video: ${clipPath}`);
-                                    video.outerHTML = `
-                                        <div style="padding: 40px; text-align: center; color: #888;">
-                                            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                            <p>Could not load video</p>
-                                        </div>
-                                    `;
-                                });
-                                
-                                video.addEventListener('loadedmetadata', function() {
-                                    console.log(`Video loaded: ${clipPath}, Duration: ${video.duration}s`);
-                                });
-                                
-                                mediaContainer.appendChild(video);
-                            } else if (extension === 'gif') {
-                                const gifContainer = document.createElement('div');
-                                gifContainer.className = 'gif-container';
-                                const img = document.createElement('img');
-                                img.src = clipPath;
-                                img.alt = `${section.name} clip ${clipIndex + 1}`;
-                                img.style.width = '100%';
-                                img.style.height = 'auto';
-                                
-                                img.addEventListener('error', function() {
-                                    console.log(`Error loading GIF: ${clipPath}`);
-                                    gifContainer.innerHTML = `
-                                        <div style="padding: 40px; text-align: center; color: #888;">
-                                            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                            <p>Could not load GIF</p>
-                                        </div>
-                                    `;
-                                });
-                                
+                            img.addEventListener('load', function() {
+                                placeholder.remove();
                                 gifContainer.appendChild(img);
                                 mediaContainer.appendChild(gifContainer);
-                            } else {
-                                const unsupported = document.createElement('div');
-                                unsupported.style.padding = '40px';
-                                unsupported.style.textAlign = 'center';
-                                unsupported.style.color = '#888';
-                                unsupported.innerHTML = `
-                                    <i class="fas fa-file" style="font-size: 48px; margin-bottom: 10px;"></i>
-                                    <p>Unsupported file type</p>
+                            });
+                            
+                            img.addEventListener('error', function() {
+                                placeholder.innerHTML = `
+                                    <div style="text-align: center; color: #888;">
+                                        <i class="fas fa-exclamation-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                        <p>GIF failed to load</p>
+                                    </div>
                                 `;
-                                mediaContainer.appendChild(unsupported);
-                            }
-                        }).catch(error => {
-                            console.error(`Error checking file ${clipPath}:`, error);
+                            });
+                            
+                        } else {
                             placeholder.innerHTML = `
-                                <div style="text-align: center; color: #888;">
-                                    <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                    <p>Error loading clip</p>
+                                <div style="padding: 40px; text-align: center; color: #888;">
+                                    <i class="fas fa-file" style="font-size: 48px; margin-bottom: 10px;"></i>
+                                    <p>Unsupported file type: .${extension}</p>
                                 </div>
                             `;
-                        });
+                        }
                         
                         clipItem.appendChild(mediaContainer);
                         clipsGrid.appendChild(clipItem);
@@ -835,7 +890,7 @@
                 
                 sectionDiv.appendChild(clipsGrid);
                 
-                if (sectionIndex < sections.length - 1) {
+                if (sectionIndex < sectionsData.length - 1) {
                     const sectionDividerLarge = document.createElement('div');
                     sectionDividerLarge.className = 'section-divider-large';
                     clipsContainer.appendChild(sectionDividerLarge);
@@ -845,16 +900,6 @@
             });
             
             initSmoothScroll();
-        }
-        
-        async function checkFileExists(url) {
-            try {
-                const response = await fetch(url, { method: 'HEAD' });
-                return response.ok;
-            } catch (error) {
-                console.log(`File check failed for ${url}:`, error);
-                return false;
-            }
         }
         
         function initSmoothScroll() {

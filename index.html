@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fakewithin | Enhanced Floating Dots Animation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        html, body {
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .shine-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 120, 120, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(100, 100, 100, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #landing-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            padding: 20px;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .main-content {
+            text-align: center;
+            max-width: 900px;
+            padding: 40px;
+            animation: fadeIn 1.5s ease-out;
+            position: relative;
+            z-index: 3;
+        }
+
+        .main-title {
+            font-size: clamp(36px, 6.5vw, 120px);
+            font-weight: 800;
+            letter-spacing: -2px;
+            background: linear-gradient(to right, #ffffff, #cccccc, #aaaaaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 30px;
+            line-height: 1;
+            position: relative;
+            display: inline-block;
+        }
+
+        .title-container {
+            display: inline-block;
+            position: relative;
+        }
+
+        .main-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #ffffff, transparent);
+            border-radius: 2px;
+        }
+
+        .subtitle {
+            font-size: clamp(14px, 1.4vw, 24px);
+            color: #aaaaaa;
+            font-weight: 300;
+            margin-bottom: 60px;
+            max-width: 700px;
+            line-height: 1.5;
+            letter-spacing: 0.5px;
+        }
+
+        .show-clips-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 16px 40px;
+            margin-top: 30px;
+            font-size: clamp(12px, 1.1vw, 18px);
+            font-weight: 500;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .show-clips-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+            z-index: -1;
+        }
+
+        .show-clips-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .show-clips-btn:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .show-clips-btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .show-clips-btn i {
+            margin-right: 12px;
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+
+        .show-clips-btn:hover i {
+            transform: rotate(15deg);
+        }
+
+        .minimal-footer {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: clamp(10px, 0.8vw, 14px);
+            color: #666666;
+            letter-spacing: 1px;
+            font-weight: 300;
+            z-index: 3;
+        }
+
+        #clips-gallery {
+            position: relative;
+            min-height: 100vh;
+            padding: 80px 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease;
+        }
+
+        #clips-gallery.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .section-nav {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px 20px;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 8px 20px;
+            color: #aaaaaa;
+            font-size: 14px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .section-btn:hover {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .section-btn.active {
+            color: #ffffff;
+            border-color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .clips-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-top: 60px;
+        }
+
+        .section {
+            margin-bottom: 80px;
+        }
+
+        .section-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 3vw, 48px);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .section-divider {
+            height: 3px;
+            width: 150px;
+            margin: 0 auto;
+            background: linear-gradient(to right, transparent, #ffffff, transparent);
+            border-radius: 2px;
+        }
+
+        .clips-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+        }
+
+        .clip-item {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .clip-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .clip-media {
+            flex: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .clip-media:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        video, .gif-container {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+            max-height: 70vh;
+            object-fit: contain;
+            background: #000;
+        }
+
+        .gif-container {
+            position: relative;
+            background: #111;
+        }
+
+        .gif-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .clip-divider {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 30px 0;
+        }
+
+        .section-divider-large {
+            height: 2px;
+            width: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+            margin: 60px 0;
+        }
+
+        .loading-placeholder {
+            background: rgba(20, 20, 20, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #888;
+            font-size: 16px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(20, 20, 20, 0.5);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .orbital-dots {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .orbital-dot {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(0.5px);
+            transition: all 0.3s ease;
+        }
+
+        @keyframes orbit-letter {
+            0% {
+                transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg) translateX(var(--orbit-radius)) rotate(-360deg);
+            }
+        }
+
+        @keyframes orbit-letter-reverse {
+            0% {
+                transform: rotate(0deg) translateX(var(--orbit-radius)) rotate(0deg);
+            }
+            100% {
+                transform: rotate(-360deg) translateX(var(--orbit-radius)) rotate(360deg);
+            }
+        }
+
+        @keyframes float-gently {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-8px) translateX(4px);
+            }
+            50% {
+                transform: translateY(4px) translateX(-4px);
+            }
+            75% {
+                transform: translateY(-4px) translateX(-8px);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                opacity: 0.8;
+                box-shadow: 0 0 8px currentColor, 0 0 12px currentColor;
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 12px currentColor, 0 0 20px currentColor;
+            }
+        }
+
+        @keyframes subtle-brightness {
+            0%, 100% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.15);
+            }
+        }
+
+        .main-title {
+            animation: subtle-brightness 4s ease-in-out infinite;
+        }
+
+        @media (max-width: 1024px) {
+            .clips-container {
+                padding: 0 40px;
+            }
+            
+            .clip-item {
+                flex-direction: column !important;
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 48px;
+                letter-spacing: -1px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .show-clips-btn {
+                padding: 14px 30px;
+                font-size: 14px;
+            }
+            
+            .section-nav {
+                flex-wrap: wrap;
+                padding: 10px;
+            }
+            
+            .section-btn {
+                padding: 6px 15px;
+                font-size: 12px;
+            }
+            
+            .clips-container {
+                padding: 0 20px;
+            }
+            
+            .clip-item {
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 36px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 40px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="shine-overlay"></div>
+    
+    <div class="orbital-dots"></div>
+
+    <div id="landing-page">
+        <div class="main-content">
+            <div class="title-container">
+                <h1 class="main-title" id="mainTitle">
+                    Fakewithin
+                </h1>
+            </div>
+            
+            <p class="subtitle">
+                made to show all different kind of clips of gekkefries / Fakewithin using Bow in combat warriors
+            </p>
+            
+            <button class="show-clips-btn" id="showClipsBtn">
+                <i class="fas fa-play"></i>
+                <span>SHOW CLIPS</span>
+            </button>
+        </div>
+        
+        <div class="minimal-footer">
+            FAKEWITHIN | ENHANCED DOTS ANIMATION
+        </div>
+    </div>
+
+    <div id="clips-gallery">
+        <div class="section-nav" id="sectionNav"></div>
+        
+        <div class="clips-container" id="clipsContainer">
+        </div>
+    </div>
+
+    <script>
+        const CLIPS_DATA = [
+            {
+                name: "suffergod",
+                clips: [
+                    "clip1.mov"
+                ]
+            },
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initOrbitalDots();
+            
+            const showClipsBtn = document.getElementById('showClipsBtn');
+            const landingPage = document.getElementById('landing-page');
+            const clipsGallery = document.getElementById('clips-gallery');
+            
+            showClipsBtn.addEventListener('click', async function() {
+                landingPage.style.opacity = '0';
+                landingPage.style.transform = 'translateY(-50px)';
+                
+                setTimeout(() => {
+                    landingPage.style.display = 'none';
+                    clipsGallery.classList.add('active');
+                    document.body.style.overflow = 'auto';
+                    
+                    loadClips();
+                }, 500);
+            });
+            
+            const shineOverlay = document.querySelector('.shine-overlay');
+            document.addEventListener('mousemove', function(e) {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+                
+                shineOverlay.style.background = `
+                    radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(120, 120, 120, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at ${100 - (x * 100)}% ${100 - (y * 100)}%, rgba(100, 100, 100, 0.02) 0%, transparent 50%)
+                `;
+            });
+        });
+        
+        function initOrbitalDots() {
+            const orbitalDotsContainer = document.querySelector('.orbital-dots');
+            const dotCount = 50;
+            
+            const dotColors = [
+                'rgba(255, 255, 255, 0.9)',
+                'rgba(255, 255, 255, 0.7)',
+                'rgba(255, 255, 255, 0.5)',
+                'rgba(255, 255, 240, 0.8)',
+                'rgba(255, 250, 230, 0.8)',
+                'rgba(255, 255, 220, 0.7)',
+                'rgba(255, 245, 220, 0.6)',
+                'rgba(255, 255, 255, 0.8)',
+                'rgba(230, 230, 255, 0.7)'
+            ];
+            
+            for (let i = 0; i < dotCount; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'orbital-dot';
+                
+                const size = Math.random() * 4 + 2;
+                dot.style.width = `${size}px`;
+                dot.style.height = `${size}px`;
+                
+                const color = dotColors[Math.floor(Math.random() * dotColors.length)];
+                dot.style.backgroundColor = color;
+                dot.style.color = color;
+                
+                dot.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+                
+                dot.style.left = `${Math.random() * 100}%`;
+                dot.style.top = `${Math.random() * 100}%`;
+                
+                const floatDuration = 15 + Math.random() * 15;
+                dot.style.animation = `
+                    float-gently ${floatDuration}s infinite ease-in-out,
+                    pulse-glow ${4 + Math.random() * 3}s infinite ease-in-out
+                `;
+                
+                orbitalDotsContainer.appendChild(dot);
+            }
+        }
+        
+        function loadClips() {
+            const clipsContainer = document.getElementById('clipsContainer');
+            const sectionNav = document.getElementById('sectionNav');
+            
+            clipsContainer.innerHTML = '';
+            sectionNav.innerHTML = '';
+            
+            const sections = CLIPS_DATA;
+            
+            if (sections.length === 0) {
+                clipsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 100px 20px;">
+                        <div style="color: #888; font-size: 16px;">
+                            <i class="fas fa-video-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>No clips available at the moment</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            sections.forEach((section, index) => {
+                const sectionBtn = document.createElement('button');
+                sectionBtn.className = `section-btn ${index === 0 ? 'active' : ''}`;
+                sectionBtn.textContent = section.name.toUpperCase();
+                sectionBtn.dataset.section = section.name;
+                
+                sectionBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.section-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    sectionBtn.classList.add('active');
+                    
+                    const sectionElement = document.getElementById(`section-${section.name}`);
+                    if (sectionElement) {
+                        sectionElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+                
+                sectionNav.appendChild(sectionBtn);
+            });
+            
+            sections.forEach((section, sectionIndex) => {
+                const sectionDiv = document.createElement('div');
+                sectionDiv.className = 'section';
+                sectionDiv.id = `section-${section.name}`;
+                
+                const sectionHeader = document.createElement('div');
+                sectionHeader.className = 'section-header';
+                
+                const sectionTitle = document.createElement('h2');
+                sectionTitle.className = 'section-title';
+                sectionTitle.textContent = section.name.toUpperCase();
+                
+                const sectionDivider = document.createElement('div');
+                sectionDivider.className = 'section-divider';
+                
+                sectionHeader.appendChild(sectionTitle);
+                sectionHeader.appendChild(sectionDivider);
+                sectionDiv.appendChild(sectionHeader);
+                
+                const clipsGrid = document.createElement('div');
+                clipsGrid.className = 'clips-grid';
+                
+                if (section.clips.length === 0) {
+                    const noClips = document.createElement('div');
+                    noClips.style.textAlign = 'center';
+                    noClips.style.padding = '40px';
+                    noClips.style.color = '#aaa';
+                    noClips.innerHTML = `
+                        <div style="color: #666;">
+                            <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 10px;"></i>
+                            <p>No clips in this section</p>
+                        </div>
+                    `;
+                    clipsGrid.appendChild(noClips);
+                } else {
+                    section.clips.forEach((clip, clipIndex) => {
+                        const clipItem = document.createElement('div');
+                        clipItem.className = 'clip-item';
+                        clipItem.style.animationDelay = `${clipIndex * 0.1}s`;
+                        
+                        const mediaContainer = document.createElement('div');
+                        mediaContainer.className = 'clip-media';
+                        
+                        const extension = clip.toLowerCase().split('.').pop();
+                        const clipPath = `./clips/${section.name}/${clip}`;
+                        
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'loading-placeholder';
+                        placeholder.innerHTML = `
+                            <div>
+                                <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i>
+                                Loading clip...
+                            </div>
+                        `;
+                        mediaContainer.appendChild(placeholder);
+                        
+                        checkFileExists(clipPath).then(exists => {
+                            if (!exists) {
+                                placeholder.innerHTML = `
+                                    <div style="text-align: center; color: #888;">
+                                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                        <p>Clip not found</p>
+                                    </div>
+                                `;
+                                return;
+                            }
+                            
+                            placeholder.remove();
+                            
+                            if (extension === 'mp4' || extension === 'mov' || extension === 'webm') {
+                                const video = document.createElement('video');
+                                video.src = clipPath;
+                                video.controls = true;
+                                video.muted = false;
+                                video.playsInline = true;
+                                video.preload = 'metadata';
+                                video.style.width = '100%';
+                                video.style.height = 'auto';
+                                
+                                video.addEventListener('error', function() {
+                                    console.log(`Error loading video: ${clipPath}`);
+                                    video.outerHTML = `
+                                        <div style="padding: 40px; text-align: center; color: #888;">
+                                            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+                                            <p>Could not load video</p>
+                                        </div>
+                                    `;
+                                });
+                                
+                                video.addEventListener('loadedmetadata', function() {
+                                    console.log(`Video loaded: ${clipPath}, Duration: ${video.duration}s`);
+                                });
+                                
+                                mediaContainer.appendChild(video);
+                            } else if (extension === 'gif') {
+                                const gifContainer = document.createElement('div');
+                                gifContainer.className = 'gif-container';
+                                const img = document.createElement('img');
+                                img.src = clipPath;
+                                img.alt = `${section.name} clip ${clipIndex + 1}`;
+                                img.style.width = '100%';
+                                img.style.height = 'auto';
+                                
+                                img.addEventListener('error', function() {
+                                    console.log(`Error loading GIF: ${clipPath}`);
+                                    gifContainer.innerHTML = `
+                                        <div style="padding: 40px; text-align: center; color: #888;">
+                                            <i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 10px;"></i>
+                                            <p>Could not load GIF</p>
+                                        </div>
+                                    `;
+                                });
+                                
+                                gifContainer.appendChild(img);
+                                mediaContainer.appendChild(gifContainer);
+                            } else {
+                                const unsupported = document.createElement('div');
+                                unsupported.style.padding = '40px';
+                                unsupported.style.textAlign = 'center';
+                                unsupported.style.color = '#888';
+                                unsupported.innerHTML = `
+                                    <i class="fas fa-file" style="font-size: 48px; margin-bottom: 10px;"></i>
+                                    <p>Unsupported file type</p>
+                                `;
+                                mediaContainer.appendChild(unsupported);
+                            }
+                        }).catch(error => {
+                            console.error(`Error checking file ${clipPath}:`, error);
+                            placeholder.innerHTML = `
+                                <div style="text-align: center; color: #888;">
+                                    <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
+                                    <p>Error loading clip</p>
+                                </div>
+                            `;
+                        });
+                        
+                        clipItem.appendChild(mediaContainer);
+                        clipsGrid.appendChild(clipItem);
+                        
+                        if (clipIndex < section.clips.length - 1) {
+                            const clipDivider = document.createElement('div');
+                            clipDivider.className = 'clip-divider';
+                            clipsGrid.appendChild(clipDivider);
+                        }
+                    });
+                }
+                
+                sectionDiv.appendChild(clipsGrid);
+                
+                if (sectionIndex < sections.length - 1) {
+                    const sectionDividerLarge = document.createElement('div');
+                    sectionDividerLarge.className = 'section-divider-large';
+                    clipsContainer.appendChild(sectionDividerLarge);
+                }
+                
+                clipsContainer.appendChild(sectionDiv);
+            });
+            
+            initSmoothScroll();
+        }
+        
+        async function checkFileExists(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                console.log(`File check failed for ${url}:`, error);
+                return false;
+            }
+        }
+        
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

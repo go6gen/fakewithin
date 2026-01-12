@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fakewithin | Enhanced Floating Dots Animation</title>
+    <title>Fakewithin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -195,47 +195,41 @@
 
         .section-nav {
             position: fixed;
-            top: 20px;
+            top: 50px;
             left: 0;
-            right: 0;
+            width: 100%;
+            z-index: 10;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            padding: 15px 20px;
-            z-index: 100;
-            background: rgba(10, 10, 10, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 0 20px;
         }
 
         .section-btn {
-            background: transparent;
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            padding: 8px 20px;
-            color: #aaaaaa;
+            color: #ffffff;
+            padding: 10px 25px;
+            border-radius: 50px;
             font-size: 14px;
-            font-weight: 400;
+            font-weight: 500;
+            letter-spacing: 1px;
             cursor: pointer;
             transition: all 0.3s ease;
+            text-transform: uppercase;
         }
 
         .section-btn:hover {
-            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
 
-        .section-btn.active {
-            color: #ffffff;
-            border-color = "#ffffff";
-            background: rgba(255, 255, 255, 0.1);
-        }
-
         .clips-container {
-            max-width: 1400px;
+            max-width: 900px;
             margin: 0 auto;
-            padding-top: 60px;
+            padding-top: 120px;
         }
 
         .section {
@@ -243,12 +237,12 @@
         }
 
         .section-header {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             text-align: center;
         }
 
         .section-title {
-            font-size: clamp(28px, 3vw, 48px);
+            font-size: clamp(24px, 2.5vw, 36px);
             font-weight: 700;
             color: #ffffff;
             margin-bottom: 10px;
@@ -257,87 +251,111 @@
         }
 
         .section-divider {
-            height: 3px;
-            width: 150px;
+            height: 2px;
+            width: 100px;
             margin: 0 auto;
             background: linear-gradient(to right, transparent, #ffffff, transparent);
             border-radius: 2px;
         }
 
+        .big-separator {
+            height: 4px;
+            width: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            margin: 60px 0;
+            border-radius: 2px;
+        }
+
+        .small-separator {
+            height: 1px;
+            width: 80%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 40px auto;
+            border-radius: 1px;
+        }
+
         .clips-grid {
             display: flex;
             flex-direction: column;
-            gap: 60px;
+            align-items: center;
+            gap: 0;
         }
 
         .clip-item {
-            display: flex;
-            align-items: center;
-            gap: 40px;
             opacity: 0;
             transform: translateY(20px);
             animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .clip-item:nth-child(even) {
-            flex-direction: row-reverse;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0;
         }
 
         .clip-media {
-            flex: 1;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            transition: transform 0.4s ease, box-shadow 0.4s ease;
-        }
-
-        .clip-media:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-        }
-
-        video {
             width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 12px;
-            max-height: 70vh;
-            object-fit: cover;
+            max-width: 800px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.1);
             background: #000;
         }
 
-        .gif-container img {
+        .clip-media:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .video-container {
             width: 100%;
-            height: auto;
+            position: relative;
+            overflow: hidden;
+            border-radius: 6px;
+            background: #000;
+        }
+
+        .video-container::before {
+            content: '';
             display: block;
-            border-radius: 12px;
-            max-height: 70vh;
-            object-fit: cover;
+            padding-top: 56.25%;
         }
 
-        .clip-divider {
-            height: 1px;
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-            margin: 30px 0;
+            height: 100%;
+            border: none;
+            border-radius: 6px;
         }
 
-        .section-divider-large {
-            height: 2px;
+        .video-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
-            margin: 60px 0;
-        }
-
-        .loading-placeholder {
-            background: rgba(20, 20, 20, 0.5);
-            border-radius: 12px;
+            height: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
-            color: #888;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
             font-size: 16px;
+            gap: 15px;
+            border-radius: 6px;
+        }
+
+        .video-loading .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
         }
 
         ::-webkit-scrollbar {
@@ -379,6 +397,10 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .orbital-dots {
@@ -439,12 +461,11 @@
 
         @media (max-width: 1024px) {
             .clips-container {
-                padding: 0 40px;
+                padding: 0 30px;
             }
             
-            .clip-item {
-                flex-direction: column !important;
-                gap: 30px;
+            .clip-media {
+                max-width: 700px;
             }
         }
 
@@ -463,22 +484,31 @@
                 font-size: 14px;
             }
             
+            .clips-container {
+                padding: 0 20px;
+                padding-top: 150px;
+            }
+            
+            .clip-media {
+                max-width: 100%;
+            }
+            
             .section-nav {
-                flex-wrap: wrap;
-                padding: 10px;
+                top: 30px;
+                gap: 10px;
             }
             
             .section-btn {
-                padding: 6px 15px;
+                padding: 8px 15px;
                 font-size: 12px;
             }
             
-            .clips-container {
-                padding: 0 20px;
+            .big-separator {
+                margin: 40px 0;
             }
             
-            .clip-item {
-                gap: 20px;
+            .small-separator {
+                margin: 30px auto;
             }
         }
 
@@ -497,7 +527,22 @@
             }
             
             .section-title {
-                font-size: 24px;
+                font-size: 22px;
+            }
+            
+            .clips-container {
+                padding: 0 15px;
+                padding-top: 160px;
+            }
+            
+            .section-nav {
+                top: 20px;
+                gap: 8px;
+            }
+            
+            .section-btn {
+                padding: 6px 12px;
+                font-size: 11px;
             }
         }
     </style>
@@ -526,18 +571,34 @@
         </div>
         
         <div class="minimal-footer">
-            FAKEWITHIN | ENHANCED DOTS ANIMATION
+            FAKEWITHIN
         </div>
     </div>
 
     <div id="clips-gallery">
         <div class="section-nav" id="sectionNav"></div>
-        
         <div class="clips-container" id="clipsContainer">
         </div>
     </div>
 
     <script>
+        const clipData = [
+            {
+                name: "suffergod",
+                clips: [
+                    { name: "suffergod_1" },
+                ]
+            },
+            {
+                name: "other",
+                clips: [
+                    { name: "other_2" },
+                ]
+            }
+        ];
+
+        let API_BASE_URL = "";
+
         document.addEventListener('DOMContentLoaded', function() {
             initOrbitalDots();
             
@@ -554,7 +615,7 @@
                     clipsGallery.classList.add('active');
                     document.body.style.overflow = 'auto';
                     
-                    loadClips();
+                    fetchAPIUrlAndLoadClips();
                 }, 500);
             });
             
@@ -569,6 +630,46 @@
                 `;
             });
         });
+        
+        async function fetchAPIUrlAndLoadClips() {
+            const clipsContainer = document.getElementById('clipsContainer');
+            
+            clipsContainer.innerHTML = `
+                <div style="text-align: center; padding: 100px 20px;">
+                    <div style="color: #888; font-size: 16px;">
+                        <div class="spinner" style="width: 50px; height: 50px; border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                        <p>Fetching API endpoint...</p>
+                    </div>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('https://gekkefries.pythonanywhere.com/get_vps');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch VPS URL');
+                }
+                
+                const data = await response.json();
+                API_BASE_URL = data.vps_url;
+                
+                if (!API_BASE_URL) {
+                    throw new Error('No VPS URL returned');
+                }
+                
+                loadClips();
+                
+            } catch (error) {
+                console.error('Error fetching API URL:', error);
+                clipsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 100px 20px;">
+                        <div style="color: #888; font-size: 16px;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>Failed to fetch API endpoint. Please try again later.</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
         
         function initOrbitalDots() {
             const orbitalDotsContainer = document.querySelector('.orbital-dots');
@@ -613,131 +714,57 @@
             }
         }
         
-        async function loadClips() {
+        function loadClips() {
             const clipsContainer = document.getElementById('clipsContainer');
-            const sectionNav = document.getElementById('sectionNav');
             
             clipsContainer.innerHTML = '';
-            sectionNav.innerHTML = '';
             
-            clipsContainer.innerHTML = `
-                <div style="text-align: center; padding: 100px 20px;">
-                    <div style="color: #888; font-size: 16px;">
-                        <i class="fas fa-spinner fa-spin" style="font-size: 48px; margin-bottom: 20px;"></i>
-                        <p>Loading clips...</p>
-                    </div>
-                </div>
-            `;
+            const nonEmptySections = clipData.filter(section => section.clips.length > 0);
             
-            try {
-                const sectionsData = await discoverClipFolders();
-                
-                if (sectionsData.length === 0) {
-                    clipsContainer.innerHTML = `
-                        <div style="text-align: center; padding: 100px 20px;">
-                            <div style="color: #888; font-size: 16px;">
-                                <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
-                                <p>No clip folders found in /clips/ directory</p>
-                            </div>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                renderClips(sectionsData);
-                
-            } catch (error) {
+            if (nonEmptySections.length === 0) {
                 clipsContainer.innerHTML = `
                     <div style="text-align: center; padding: 100px 20px;">
                         <div style="color: #888; font-size: 16px;">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
-                            <p>Error loading clips. Check if clips folder exists.</p>
+                            <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>No clips available yet. Check back soon!</p>
                         </div>
                     </div>
                 `;
+                return;
             }
+            
+            createSectionNavigation(nonEmptySections);
+            renderClips(nonEmptySections);
         }
         
-        async function discoverClipFolders() {
-            const sectionsData = [];
+        function createSectionNavigation(sectionsData) {
+            const sectionNav = document.getElementById('sectionNav');
+            sectionNav.innerHTML = '';
             
-            try {
-                const folderNames = ['suffergod', 'bow_tricks', 'montages', 'highlights'];
+            sectionsData.forEach((section, index) => {
+                const button = document.createElement('button');
+                button.className = 'section-btn';
+                button.textContent = section.name.replace('_', ' ').toUpperCase();
+                button.dataset.sectionId = `section-${section.name}`;
                 
-                for (const folderName of folderNames) {
-                    const clips = await getClipsFromFolder(folderName);
-                    if (clips.length > 0) {
-                        sectionsData.push({
-                            name: folderName,
-                            clips: clips
+                button.addEventListener('click', function() {
+                    const targetSection = document.getElementById(this.dataset.sectionId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'start'
                         });
                     }
-                }
-            } catch (error) {
-            }
-            
-            return sectionsData;
-        }
-        
-        async function getClipsFromFolder(folderName) {
-            const clips = [];
-            
-            try {
-                const testClip = `./clips/${folderName}/clip1.mp4`;
-                const response = await fetch(testClip, { method: 'HEAD' });
+                });
                 
-                if (response.ok) {
-                    const extensions = ['mp4', 'mov', 'webm', 'avi', 'mkv', 'gif', 'jpg', 'jpeg', 'png'];
-                    
-                    for (const ext of extensions) {
-                        for (let i = 1; i <= 50; i++) {
-                            const fileName = `clip${i}.${ext}`;
-                            const filePath = `./clips/${folderName}/${fileName}`;
-                            
-                            try {
-                                const fileResponse = await fetch(filePath, { method: 'HEAD' });
-                                if (fileResponse.ok) {
-                                    clips.push(fileName);
-                                }
-                            } catch (error) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            } catch (error) {
-            }
-            
-            return clips;
+                sectionNav.appendChild(button);
+            });
         }
         
         function renderClips(sectionsData) {
             const clipsContainer = document.getElementById('clipsContainer');
-            const sectionNav = document.getElementById('sectionNav');
             
             clipsContainer.innerHTML = '';
-            sectionNav.innerHTML = '';
-            
-            sectionsData.forEach((section, index) => {
-                const sectionBtn = document.createElement('button');
-                sectionBtn.className = `section-btn ${index === 0 ? 'active' : ''}`;
-                sectionBtn.textContent = section.name.toUpperCase();
-                sectionBtn.dataset.section = section.name;
-                
-                sectionBtn.addEventListener('click', () => {
-                    document.querySelectorAll('.section-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    sectionBtn.classList.add('active');
-                    
-                    const sectionElement = document.getElementById(`section-${section.name}`);
-                    if (sectionElement) {
-                        sectionElement.scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-                
-                sectionNav.appendChild(sectionBtn);
-            });
             
             sectionsData.forEach((section, sectionIndex) => {
                 const sectionDiv = document.createElement('div');
@@ -749,7 +776,7 @@
                 
                 const sectionTitle = document.createElement('h2');
                 sectionTitle.className = 'section-title';
-                sectionTitle.textContent = section.name.toUpperCase();
+                sectionTitle.textContent = section.name.replace('_', ' ').toUpperCase();
                 
                 const sectionDivider = document.createElement('div');
                 sectionDivider.className = 'section-divider';
@@ -761,96 +788,83 @@
                 const clipsGrid = document.createElement('div');
                 clipsGrid.className = 'clips-grid';
                 
-                if (section.clips.length === 0) {
-                    const noClips = document.createElement('div');
-                    noClips.style.textAlign = 'center';
-                    noClips.style.padding = '40px';
-                    noClips.style.color = '#aaa';
-                    noClips.innerHTML = `
-                        <div style="color: #666;">
-                            <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 10px;"></i>
-                            <p>No clips in this section</p>
-                        </div>
+                section.clips.forEach((clip, clipIndex) => {
+                    const clipItem = document.createElement('div');
+                    clipItem.className = 'clip-item';
+                    clipItem.style.animationDelay = `${clipIndex * 0.1}s`;
+                    
+                    const mediaContainer = document.createElement('div');
+                    mediaContainer.className = 'clip-media';
+                    
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'video-container';
+                    
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.className = 'video-loading';
+                    loadingDiv.innerHTML = `
+                        <div class="spinner"></div>
+                        <div>Loading video...</div>
                     `;
-                    clipsGrid.appendChild(noClips);
-                } else {
-                    section.clips.forEach((clip, clipIndex) => {
-                        const clipItem = document.createElement('div');
-                        clipItem.className = 'clip-item';
-                        clipItem.style.animationDelay = `${clipIndex * 0.1}s`;
-                        
-                        const mediaContainer = document.createElement('div');
-                        mediaContainer.className = 'clip-media';
-                        
-                        const extension = clip.toLowerCase().split('.').pop();
-                        const clipPath = `./clips/${section.name}/${clip}`;
-                        
-                        if (['mp4', 'mov', 'webm', 'avi', 'mkv'].includes(extension)) {
-                            const video = document.createElement('video');
-                            video.src = clipPath;
-                            video.controls = true;
-                            video.muted = false;
-                            video.playsInline = true;
-                            video.preload = 'metadata';
-                            video.style.width = '100%';
-                            video.style.height = 'auto';
-                            video.style.display = 'block';
-                            video.style.objectFit = 'cover';
-                            
-                            video.addEventListener('error', function() {
-                                mediaContainer.innerHTML = `
-                                    <div style="text-align: center; color: #888; padding: 40px;">
-                                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                        <p>Video failed to load: ${clip}</p>
-                                    </div>
-                                `;
-                            });
-                            
-                            mediaContainer.appendChild(video);
-                            
-                        } else if (['gif', 'jpg', 'jpeg', 'png'].includes(extension)) {
-                            const img = document.createElement('img');
-                            img.src = clipPath;
-                            img.alt = `${section.name} clip ${clipIndex + 1}`;
-                            img.style.width = '100%';
-                            img.style.height = 'auto';
-                            img.style.display = 'block';
-                            img.style.objectFit = 'cover';
-                            img.style.borderRadius = '12px';
-                            
-                            img.addEventListener('error', function() {
-                                mediaContainer.innerHTML = `
-                                    <div style="text-align: center; color: #888; padding: 40px;">
-                                        <i class="fas fa-exclamation-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                                        <p>Image failed to load: ${clip}</p>
-                                    </div>
-                                `;
-                            });
-                            
-                            mediaContainer.appendChild(img);
-                        }
-                        
-                        clipItem.appendChild(mediaContainer);
-                        clipsGrid.appendChild(clipItem);
-                        
-                        if (clipIndex < section.clips.length - 1) {
-                            const clipDivider = document.createElement('div');
-                            clipDivider.className = 'clip-divider';
-                            clipsGrid.appendChild(clipDivider);
-                        }
-                    });
-                }
+                    
+                    const iframe = document.createElement('iframe');
+                    iframe.title = `${clip.name}`;
+                    iframe.style.display = 'none';
+                    iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+                    iframe.allowFullscreen = true;
+                    
+                    videoContainer.appendChild(loadingDiv);
+                    videoContainer.appendChild(iframe);
+                    mediaContainer.appendChild(videoContainer);
+                    
+                    clipItem.appendChild(mediaContainer);
+                    clipsGrid.appendChild(clipItem);
+                    
+                    if (clipIndex < section.clips.length - 1) {
+                        const smallSeparator = document.createElement('div');
+                        smallSeparator.className = 'small-separator';
+                        clipsGrid.appendChild(smallSeparator);
+                    }
+                    
+                    setTimeout(() => {
+                        loadVideoPlayer(clip.name, iframe, loadingDiv);
+                    }, clipIndex * 300);
+                });
                 
                 sectionDiv.appendChild(clipsGrid);
+                clipsContainer.appendChild(sectionDiv);
                 
                 if (sectionIndex < sectionsData.length - 1) {
-                    const sectionDividerLarge = document.createElement('div');
-                    sectionDividerLarge.className = 'section-divider-large';
-                    clipsContainer.appendChild(sectionDividerLarge);
+                    const bigSeparator = document.createElement('div');
+                    bigSeparator.className = 'big-separator';
+                    clipsContainer.appendChild(bigSeparator);
                 }
-                
-                clipsContainer.appendChild(sectionDiv);
             });
+        }
+        
+        function loadVideoPlayer(filename, iframeElement, loadingElement) {
+            if (!API_BASE_URL) {
+                loadingElement.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 10px;"></i>
+                    <div>API endpoint not available</div>
+                `;
+                return;
+            }
+            
+            const videoUrl = `${API_BASE_URL}/load?filename=${encodeURIComponent(filename)}`;
+            
+            iframeElement.src = videoUrl;
+            
+            iframeElement.onload = function() {
+                loadingElement.style.display = 'none';
+                iframeElement.style.display = 'block';
+            };
+            
+            iframeElement.onerror = () => {
+                loadingElement.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 10px;"></i>
+                    <div>Failed to load video</div>
+                `;
+            };
         }
     </script>
 </body>
